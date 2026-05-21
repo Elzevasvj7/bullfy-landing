@@ -1,0 +1,363 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Bullfy - Advanced Trading Analytics Platform">
+    <title>Bullfy | Trading Analytics</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  </head>
+  <body>
+    <!-- Background Canvas -->
+    <canvas id="bg-canvas"></canvas>
+    <canvas id="fx-canvas" aria-hidden="true"></canvas>
+
+    <!-- App Container -->
+    <div id="app">
+      <!-- Top Promo Banner -->
+      <div class="top-banner">
+        <p>10% OFF + acceso a programas Bullfy Pro para traders fondeados este mes</p>
+      </div>
+
+      <!-- Navbar -->
+      <nav class="glass-nav">
+        <div class="logo">
+          <svg width="32" height="32" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M 25 85 L 25 15 L 50 5 L 80 20 L 80 40 L 50 55 L 40 55 M 40 55 L 50 55 L 80 70 L 80 90 L 50 100 L 25 85" stroke="currentColor" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/>
+          </svg>
+          Bullfy
+        </div>
+        <div class="nav-links">
+          <a href="#brokerage">Brokerage</a>
+          <a href="#prop">Prop Trading</a>
+          <a href="#social">Social Trading</a>
+          <a href="#faqs">FAQs</a>
+        </div>
+        <div class="nav-actions">
+          <a href="#login" class="login-link">Iniciar sesion</a>
+          <button class="btn-primary-glow">Abrir cuenta</button>
+        </div>
+      </nav>
+
+      <!-- Main Layout Grid -->
+      <div class="main-grid-container">
+        <!-- Hero Left Column -->
+        <section class="hero-left">
+          <div class="badge-pill">
+            <span class="badge-label">NUEVO</span>
+            <span>Programas Bullfy Pro disponibles</span>
+          </div>
+
+          <h1 class="hero-title">
+            Opera con<br>criterio.<br>Escala con<br>confianza.
+          </h1>
+
+          <p class="hero-subtitle">
+            Un ecosistema premium de trading para traders que<br>buscan disciplina, mejor ejecucion y una ruta mas<br>clara hacia el crecimiento fondeado.
+          </p>
+
+          <div class="hero-actions">
+            <button class="btn-white">Iniciar challenge</button>
+            <button class="btn-outline">Ver demo</button>
+          </div>
+
+          <div class="trust-score">
+            <p class="trust-label">Traders activos confian en Bullfy</p>
+            <p class="trust-rating">Excelente 4.8/5 TrustScore</p>
+          </div>
+        </section>
+
+        <!-- Hero Right Column (Video Preview) -->
+        <section class="hero-right">
+          <div class="video-preview-card">
+            <div class="video-header">
+              <span>Plataforma Bullfy</span>
+              <span class="video-badge">Vista previa</span>
+            </div>
+            
+            <div class="video-content">
+              <div class="play-btn-circle">
+                <div class="play-icon"></div>
+              </div>
+              <div class="video-text">
+                <h3>Vista de plataforma</h3>
+                <p>Una vista rapida de la experiencia Bullfy: cuentas,<br>mercado y herramientas conectadas.</p>
+              </div>
+            </div>
+            <!-- Gradient overlay to simulate image background -->
+            <div class="video-bg-overlay"></div>
+          </div>
+        </section>
+      </div>
+
+      <!-- Prop Firm Plans Section -->
+      <section id="prop" class="section-container">
+        <div class="section-badge">Proprietary Trading</div>
+        <h2 class="section-title">Simple, Transparent<br>Prop Firm Plans</h2>
+        <p class="section-subtitle">Start your evaluation, prove your skills, and trade with our capital. No hidden fees, just clear steps to becoming a funded trader.</p>
+
+        <div class="tabs-container">
+          <button class="tab-btn">One Phase</button>
+          <button class="tab-btn">Two Phases</button>
+          <button class="tab-btn active">Instant Funding</button>
+        </div>
+
+        <p class="account-size-label">Select Account Size</p>
+        <div class="account-size-selector">
+          <button class="size-btn">$500</button>
+          <button class="size-btn">$1,000</button>
+          <button class="size-btn">$5,000</button>
+          <button class="size-btn">$10,000</button>
+          <button class="size-btn">$25,000</button>
+          <button class="size-btn active">$50,000</button>
+        </div>
+
+        <div class="plan-card">
+          <div class="plan-col-1">
+            <span class="bull-titan-label">BULL-TITAN</span>
+            <div>
+              <p class="metric-label">Account Size</p>
+              <h3 class="metric-value">$50,000</h3>
+            </div>
+            <p class="plan-price">Price: $3,700</p>
+            <button class="btn-primary-glow" style="margin-top: auto;">Purchase account</button>
+          </div>
+
+          <div class="plan-col-2">
+            <div class="metric-box full-width">
+              <p class="metric-label">Profit Split</p>
+              <p class="metric-value">70%</p>
+            </div>
+            <div class="metric-box">
+              <p class="metric-label">Max. Drawdown</p>
+              <p class="metric-value">6%</p>
+            </div>
+            <div class="metric-box">
+              <p class="metric-label">Daily Drawdown</p>
+              <p class="metric-value">3%</p>
+            </div>
+          </div>
+
+          <div class="plan-col-3">
+            <div class="plan-list-item">
+              <span class="item-label">Trading Phases</span>
+              <span class="item-value">N/A</span>
+            </div>
+            <div class="plan-list-item">
+              <span class="item-label">Trading Platform</span>
+              <span class="item-value">MT5</span>
+            </div>
+            <div class="plan-list-item">
+              <span class="item-label">Withdrawal</span>
+              <span class="item-value">Bi - Weekly</span>
+            </div>
+            <div class="plan-list-item">
+              <span class="item-label">Min. Trading Days</span>
+              <span class="item-value">3</span>
+            </div>
+            <div class="plan-list-item">
+              <span class="item-label">Leverage</span>
+              <span class="item-value">1:30</span>
+            </div>
+            <div class="plan-list-item">
+              <span class="item-label">EA Trading</span>
+              <span class="item-value">Allowed</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Social Trading Section -->
+      <section id="social" class="section-container">
+        <div class="section-badge">Social Trading</div>
+        <h2 class="section-title">Copy Top Traders<br>in Real Time</h2>
+        <p class="section-subtitle">Explore strategies from experienced traders and copy their trades in real time, so you can grow without going it alone.</p>
+
+        <div class="tabs-container social-tabs">
+          <button class="tab-btn active">PAMM</button>
+          <button class="tab-btn">MAM</button>
+          <button class="tab-btn">Copy Trading</button>
+        </div>
+
+        <div class="social-grid">
+          <div class="social-card-left">
+            <h3 class="social-card-title">PAMM (Percentage Allocation<br>Management Module)</h3>
+            <p class="social-card-desc">A professional trader manages a pooled account using their own strategy, and profits or losses are automatically shared with investors based on their contribution.</p>
+            <button class="btn-white-solid">Start Trading</button>
+          </div>
+          
+          <div class="social-card-right">
+            <div class="social-card-bg">
+               <div class="social-bg-glow-1"></div>
+               <div class="social-bg-glow-2"></div>
+               <div class="social-bg-grid"></div>
+            </div>
+
+            <div class="min-deposit-card">
+              <p class="min-deposit-label">Minimum Deposit</p>
+              <p class="min-deposit-value">$100</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Testimonials Section -->
+      <section id="testimonials" class="section-container">
+        <div class="section-badge">What Our Traders Say</div>
+        <h2 class="section-title">Real Stories, Real Success</h2>
+        <p class="section-subtitle">From first-time investors to seasoned pros, hear how Bullfy is transforming trading journeys around the world.</p>
+
+        <div class="testimonials-carousel-container" aria-label="Testimonials carousel">
+          <div class="testimonials-track" id="testimonials-track">
+            <!-- Card 1 -->
+            <div class="testimonial-card">
+              <div class="stars">
+                <span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span>
+              </div>
+              <p class="testimonial-text">"It's amazing how seamless trading is when you have the best tools at your disposal. Thank you Bullfy"</p>
+              <p class="testimonial-author">Carlota A.</p>
+            </div>
+            
+            <!-- Card 2 -->
+            <div class="testimonial-card">
+              <div class="stars">
+                <span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span>
+              </div>
+              <p class="testimonial-text">"The support from Bullfy is incredible."</p>
+              <p class="testimonial-author">Roberto S.</p>
+            </div>
+
+            <!-- Card 3 -->
+            <div class="testimonial-card">
+              <div class="stars">
+                <span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span><span class="star">&#9733;</span>
+              </div>
+              <p class="testimonial-text">"Thank you so much. You have all I need in a broker. I really appreciate it"</p>
+              <p class="testimonial-author">Pedro B.</p>
+            </div>
+          </div>
+
+          <div class="carousel-nav" aria-label="Testimonials navigation">
+            <div class="carousel-dots" id="testimonial-dots" aria-label="Choose testimonial"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- Get Started Section -->
+      <section id="get-started" class="section-container get-started-section">
+        <div class="get-started-bg"></div>
+        <div class="section-badge">Get Started</div>
+        <h2 class="section-title">Get Started in a Few Clicks</h2>
+        <p class="section-subtitle">Join a global platform where you can trade the markets, get funded, and grow with a community of top-performing traders.</p>
+
+        <div class="steps-container">
+          <!-- Step 1 -->
+          <div class="step-card">
+            <div class="step-number">1</div>
+            <div class="step-content">
+              <h3>Register</h3>
+              <p>Simply, complete the registration form on our website</p>
+            </div>
+          </div>
+          <!-- Step 2 -->
+          <div class="step-card">
+            <div class="step-number">2</div>
+            <div class="step-content">
+              <h3>Activate</h3>
+              <p>Activate your account by uploading your documents for verification.</p>
+            </div>
+          </div>
+          <!-- Step 3 -->
+          <div class="step-card">
+            <div class="step-number">3</div>
+            <div class="step-content">
+              <h3>Fund</h3>
+              <p>Fund your wallet and transfer to your trading account</p>
+            </div>
+          </div>
+          <!-- Step 4 -->
+          <div class="step-card">
+            <div class="step-number">4</div>
+            <div class="step-content">
+              <h3>Trade</h3>
+              <p>Open your web, desktop or mobile platform and place your first trade</p>
+            </div>
+          </div>
+        </div>
+
+        <button class="btn-white-solid register-btn">Register <span style="background: var(--color-blue-bright); color: white; padding: 2px 8px; border-radius: 4px; margin-left: 8px;">&rarr;</span></button>
+      </section>
+
+      <!-- Market Ticker (Marquee) -->
+      <div class="ticker-wrapper">
+        <div class="ticker-track">
+          <!-- Populated by JS -->
+        </div>
+      </div>
+      </div>
+
+      <!-- Footer Section -->
+      <footer class="footer-section">
+        <div class="footer-container">
+          <div class="footer-top">
+            <div class="footer-brand">
+              <div class="footer-logo">
+                <svg width="40" height="40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M 25 85 L 25 15 L 50 5 L 80 20 L 80 40 L 50 55 L 40 55 M 40 55 L 50 55 L 80 70 L 80 90 L 50 100 L 25 85" stroke="currentColor" stroke-width="12" stroke-linejoin="round" stroke-linecap="round"/>
+                </svg>
+                Bullfy
+              </div>
+              <div class="footer-wow" style="font-size: 2rem; font-weight: 800; color: white; opacity: 0.5; margin-bottom: 2rem;">WOW</div>
+              <div class="footer-contact">
+                <p><strong>Email:</strong> support@bullfy.com</p>
+                <p><strong>Phone:</strong> +971588247560</p>
+                <p><strong>Office Address:</strong> Uptown tower, uptown, UAE</p>
+              </div>
+              <div class="social-icons">
+                <a href="#" class="social-icon">IG</a>
+                <a href="#" class="social-icon">FB</a>
+                <a href="#" class="social-icon">IN</a>
+                <a href="#" class="social-icon">X</a>
+                <a href="#" class="social-icon">YT</a>
+              </div>
+            </div>
+            
+            <div class="footer-links-wrapper">
+              <div class="footer-links-col">
+                <h4>Services</h4>
+                <a href="#">Brokerage</a>
+                <a href="#">Prop Trading</a>
+                <a href="#">Social Trading</a>
+              </div>
+              <div class="footer-links-col">
+                <h4>Legal</h4>
+                <a href="#">Terms of Service - Brokerage</a>
+                <a href="#">Terms of Service - Prop. Trading</a>
+                <a href="#">AML and KYC Policy</a>
+                <a href="#">Risk Disclosure</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="footer-bottom">
+            <p><strong>Disclaimer:</strong> This website is owned and operated by Bullfy Ltd, registered under number 2025-00353 with a registered address at Ground Floor, The Sotheby Building, Rodney Bay, Gros-Islet, Saint Lucia.</p>
+            <p>Bullfy Ltd. does not warrant the accuracy of the material presented on this website, nor are we obligated to keep all content up to date. We make no representations or warranties regarding the availability of this website or its ability to meet your expectations. Access to the website may be interrupted, delayed, or experience failures, errors, or data transmission issues. We do not guarantee that the website will be free of viruses or other harmful components, or that your device will not incur damage as a result of using this site.</p>
+            <p>You are solely responsible for safeguarding your data and equipment. We recommend taking reasonable precautions, including using updated antivirus software, to protect against viruses and other potentially harmful digital threats. Bullfy Ltd. and its affiliates shall not be held liable for any loss or damage—whether direct, indirect, or consequential—arising from the use of, or inability to use, this website. This includes, but is not limited to, losses involving income, profits, data, or business interruption. Such losses may be caused by harmful components, such as viruses, that are transmitted through the website or linked third-party websites.</p>
+            <p><strong>Intellectual Property &amp; Usage:</strong> All content found on this website—including pages, screens, text, images, and other materials—is the property of Bullfy Ltd. You may download or print portions of this website for personal use only, provided they remain unaltered and retain all original branding or identification marks. You may not copy, distribute, modify, or link to this website from another site without prior written consent from Bullfy Ltd.</p>
+            <p><strong>Risk Warning:</strong> Trading leveraged products such as forex, cryptocurrencies, and derivatives carries a high risk to your capital and may not be suitable for all investors. Before trading, ensure you fully understand the risks involved, taking into account your investment objectives and level of experience. Seek independent advice if necessary. Please read our full risk disclosure.</p>
+            <p><strong>Regional Restrictions:</strong> Bullfy Ltd. does not provide services to residents of Sudan, Syria, North Korea, Saint Vincent and the Grenadines, Cuba, Iran, the United States, and Canada.</p>
+            
+            <div class="footer-copyright">
+              &copy; 2025 Bullfy Ltd. All rights reserved.
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+    
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
