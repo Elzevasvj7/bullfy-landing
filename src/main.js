@@ -1,13 +1,28 @@
 import './style.css';
 import { initBackground } from './background.js';
 
+window.__bullfyLoadStartedAt = performance.now();
+if ('scrollRestoration' in window.history) {
+  window.history.scrollRestoration = 'manual';
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+  if (!window.location.hash) {
+    window.scrollTo(0, 0);
+  }
+
   initBackground();
-  window.requestAnimationFrame(() => {
+
+  const loadScrollExperience = () => {
     import('./scrollExperience.js').then(({ initScrollExperience }) => {
       initScrollExperience();
+    }).catch(() => {
+      document.body.classList.remove('is-loading');
+      document.body.classList.add('hero-content-ready');
     });
-  });
+  };
+
+  window.requestAnimationFrame(loadScrollExperience);
 
   // Populate Market Ticker matching the new format
   const tickerTrack = document.querySelector('.ticker-track');

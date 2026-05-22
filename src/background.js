@@ -6,6 +6,7 @@ export function initBackground() {
   let width, height;
   let particles = [];
   let lines = [];
+  let isPageVisible = true;
 
   const resize = () => {
     width = window.innerWidth;
@@ -66,10 +67,28 @@ export function initBackground() {
     }
   }
 
-  for (let i = 0; i < 70; i++) particles.push(new Particle());
-  for (let i = 0; i < 20; i++) lines.push(new FlowLine());
+  document.addEventListener('visibilitychange', () => {
+    isPageVisible = !document.hidden;
+  });
 
-  const animate = () => {
+  for (let i = 0; i < 32; i++) particles.push(new Particle());
+  for (let i = 0; i < 8; i++) lines.push(new FlowLine());
+
+  let lastFrame = 0;
+  const frameInterval = 1000 / 30;
+
+  const animate = (timestamp = 0) => {
+    if (!isPageVisible) {
+      requestAnimationFrame(animate);
+      return;
+    }
+
+    if (timestamp - lastFrame < frameInterval) {
+      requestAnimationFrame(animate);
+      return;
+    }
+    lastFrame = timestamp;
+
     // Fading trail slightly darker/bluer to match the deep blue theme
     ctx.fillStyle = 'rgba(3, 7, 18, 0.3)'; 
     ctx.fillRect(0, 0, width, height);
@@ -86,7 +105,7 @@ export function initBackground() {
 
     // Draw network connections for background
     for (let i = 0; i < particles.length; i++) {
-      for (let j = i; j < particles.length; j++) {
+      for (let j = i + 1; j < particles.length; j++) {
         const dx = particles[i].x - particles[j].x;
         const dy = particles[i].y - particles[j].y;
         const distance = Math.sqrt(dx * dx + dy * dy);

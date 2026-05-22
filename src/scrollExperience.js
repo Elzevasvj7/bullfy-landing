@@ -7,6 +7,17 @@ gsap.registerPlugin(ScrollTrigger);
 
 const prefersReducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+const finishInitialLoad = () => {
+  const startedAt = window.__bullfyLoadStartedAt || performance.now();
+  const elapsed = performance.now() - startedAt;
+  const delay = Math.max(0, 900 - elapsed);
+
+  window.setTimeout(() => {
+    document.body.classList.remove('is-loading');
+    document.body.classList.add('hero-scene-ready');
+  }, delay);
+};
+
 const initMagneticButtons = () => {
   document.querySelectorAll('button, .btn-white, .btn-outline, .btn-primary-glow, .social-icon').forEach((button) => {
     button.addEventListener('pointermove', (event) => {
@@ -37,38 +48,56 @@ const initMagneticButtons = () => {
   });
 };
 
+const initFloatingChrome = () => {
+  const intro = document.querySelector('.intro-logo-section');
+  const hero = document.querySelector('.main-grid-container');
+  let lastScrollY = window.scrollY;
+  let ticking = false;
+
+  const updateChrome = () => {
+    const currentY = window.scrollY;
+    const scrollingUp = currentY < lastScrollY - 8;
+    const scrollingDown = currentY > lastScrollY + 8;
+    const introEnd = intro ? intro.offsetTop + intro.offsetHeight : window.innerHeight;
+    const heroEnd = hero ? hero.offsetTop + hero.offsetHeight : introEnd + window.innerHeight;
+    const canShowNav = currentY > introEnd * 0.65;
+
+    if (scrollingUp && canShowNav) {
+      document.body.classList.add('nav-visible');
+    } else if (scrollingDown || currentY < 80) {
+      document.body.classList.remove('nav-visible');
+    }
+
+    document.body.classList.toggle('show-page-watermark', currentY > heroEnd - window.innerHeight * 0.35);
+    lastScrollY = currentY;
+    ticking = false;
+  };
+
+  window.addEventListener('scroll', () => {
+    if (ticking) return;
+    ticking = true;
+    window.requestAnimationFrame(updateChrome);
+  }, { passive: true });
+
+  updateChrome();
+};
+
 const initHeroMotion = () => {
   const heroItems = gsap.utils.toArray('.badge-pill, .hero-title, .hero-subtitle, .hero-actions, .trust-score');
   const videoCard = document.querySelector('.video-preview-card');
-  const heroLogo = document.querySelector('.hero-logo-canvas');
+  const heroStage = document.querySelector('.hero-logo-stage');
+  const scrollCue = document.querySelector('.hero-scroll-cue');
 
-  gsap.fromTo(heroItems, {
-    x: -44,
-    y: 24,
-  }, {
-    x: 0,
-    y: 0,
-    duration: 1,
-    stagger: 0.09,
-    ease: 'power4.out',
-    delay: 0.12,
-    onComplete: () => {
-      gsap.set(heroItems, { clearProps: 'transform' });
-    },
+  gsap.set(heroItems, {
+    x: -36,
+    y: 34,
   });
 
   if (videoCard) {
-    gsap.fromTo(videoCard, {
+    gsap.set(videoCard, {
       y: 54,
       rotateX: -7,
       rotateY: 8,
-    }, {
-      y: 0,
-      rotateX: 0,
-      rotateY: 0,
-      duration: 1.2,
-      ease: 'power4.out',
-      delay: 0.28,
     });
 
     gsap.to(videoCard, {
@@ -83,17 +112,59 @@ const initHeroMotion = () => {
     });
   }
 
-  if (heroLogo) {
-    gsap.fromTo(heroLogo, {
-      y: 18,
-      scale: 0.9,
-    }, {
+  ScrollTrigger.create({
+    trigger: '.intro-logo-section',
+    start: 'top top',
+    end: 'bottom top',
+    onUpdate: (self) => {
+      document.body.classList.toggle('hero-content-ready', self.progress > 0.72);
+    },
+    onLeave: () => document.body.classList.add('hero-content-ready'),
+    onEnterBack: (self) => {
+      document.body.classList.toggle('hero-content-ready', self.progress > 0.72);
+    },
+  });
+
+  const introTimeline = gsap.timeline({
+    scrollTrigger: {
+      trigger: '.intro-logo-section',
+      start: 'top top',
+      end: 'bottom top',
+      scrub: 1,
+    },
+  });
+
+  if (heroStage) {
+    introTimeline.to(heroStage, {
+      yPercent: -18,
+      scale: 0.72,
+      opacity: 0,
+      ease: 'none',
+    }, 0.22);
+  }
+
+  if (scrollCue) {
+    introTimeline.to(scrollCue, {
+      y: -24,
+      opacity: 0,
+      ease: 'none',
+    }, 0);
+  }
+
+  introTimeline.to(heroItems, {
+    x: 0,
+    y: 0,
+    stagger: 0.035,
+    ease: 'none',
+  }, 0.62);
+
+  if (videoCard) {
+    introTimeline.to(videoCard, {
       y: 0,
-      scale: 1,
-      duration: 1.1,
-      ease: 'power4.out',
-      delay: 0.18,
-    });
+      rotateX: 0,
+      rotateY: 0,
+      ease: 'none',
+    }, 0.68);
   }
 
   gsap.to('.hero-left', {
@@ -101,7 +172,7 @@ const initHeroMotion = () => {
     ease: 'none',
     scrollTrigger: {
       trigger: '.main-grid-container',
-      start: 'top top',
+      start: 'top bottom',
       end: 'bottom top',
       scrub: true,
     },
@@ -112,7 +183,7 @@ const initHeroMotion = () => {
     ease: 'none',
     scrollTrigger: {
       trigger: '.main-grid-container',
-      start: 'top top',
+      start: 'top bottom',
       end: 'bottom top',
       scrub: true,
     },
@@ -193,7 +264,7 @@ const initScrollReveals = () => {
 
 const createPointCloud = () => {
   const geometry = new THREE.BufferGeometry();
-  const count = 420;
+  const count = 240;
   const positions = new Float32Array(count * 3);
   const colors = new Float32Array(count * 3);
   const colorA = new THREE.Color('#3b82f6');
@@ -374,7 +445,7 @@ const prepareBullfyLogoModel = (model, targetSize = 2.6) => {
       clearcoat: 0.78,
       clearcoatRoughness: 0.14,
       transparent: true,
-      opacity: 0,
+      opacity: 0.92,
       side: THREE.DoubleSide,
     });
     logoMaterials.push(child.material);
@@ -383,10 +454,143 @@ const prepareBullfyLogoModel = (model, targetSize = 2.6) => {
   return logoMaterials;
 };
 
+const degreesToRadians = (degrees) => degrees * Math.PI / 180;
+
+const normalizeLongitude = (longitude) => {
+  let normalized = longitude;
+  while (normalized > Math.PI) normalized -= Math.PI * 2;
+  while (normalized < -Math.PI) normalized += Math.PI * 2;
+  return normalized;
+};
+
+const ellipseMask = (longitude, latitude, centerLongitude, centerLatitude, width, height, tilt = 0) => {
+  const dx = normalizeLongitude(longitude - degreesToRadians(centerLongitude));
+  const dy = latitude - degreesToRadians(centerLatitude);
+  const cos = Math.cos(tilt);
+  const sin = Math.sin(tilt);
+  const rx = dx * cos - dy * sin;
+  const ry = dx * sin + dy * cos;
+
+  return (rx / degreesToRadians(width)) ** 2 + (ry / degreesToRadians(height)) ** 2;
+};
+
+const isContinentPoint = (position) => {
+  const radius = Math.hypot(position.x, position.y, position.z);
+  if (!radius) return false;
+
+  const latitude = Math.asin(position.y / radius);
+  const longitude = Math.atan2(position.z, position.x);
+  const masks = [
+    ellipseMask(longitude, latitude, -103, 46, 42, 24, -0.2),
+    ellipseMask(longitude, latitude, -95, 21, 22, 13, 0.2),
+    ellipseMask(longitude, latitude, -61, -19, 17, 34, -0.36),
+    ellipseMask(longitude, latitude, -43, 71, 18, 8, 0.1),
+    ellipseMask(longitude, latitude, 16, 8, 24, 34, -0.08),
+    ellipseMask(longitude, latitude, 68, 48, 70, 24, 0.05),
+    ellipseMask(longitude, latitude, 81, 22, 34, 20, -0.15),
+    ellipseMask(longitude, latitude, 134, -25, 22, 13, 0.08),
+    ellipseMask(longitude, latitude, 0, -78, 180, 10, 0),
+  ];
+  const closestMask = Math.min(...masks);
+  const coastlineNoise = Math.sin(longitude * 9.0 + latitude * 4.0) * 0.1
+    + Math.sin(longitude * 17.0 - latitude * 11.0) * 0.055;
+
+  return closestMask < 1.02 + coastlineNoise;
+};
+
+const filterPointGeometryToContinents = (geometry, center) => {
+  const position = geometry.getAttribute('position');
+  if (!position) return geometry;
+
+  const filteredPositions = [];
+  const point = new THREE.Vector3();
+
+  for (let index = 0; index < position.count; index += 1) {
+    point.set(
+      position.getX(index) - center.x,
+      position.getY(index) - center.y,
+      position.getZ(index) - center.z,
+    );
+
+    if (!isContinentPoint(point)) continue;
+
+    filteredPositions.push(
+      position.getX(index),
+      position.getY(index),
+      position.getZ(index),
+    );
+  }
+
+  const nextGeometry = new THREE.BufferGeometry();
+  nextGeometry.setAttribute('position', new THREE.Float32BufferAttribute(filteredPositions, 3));
+  return nextGeometry;
+};
+
+const preparePlanetModel = (model, targetSize = 3.52) => {
+  const box = new THREE.Box3().setFromObject(model);
+  const size = box.getSize(new THREE.Vector3());
+  const center = box.getCenter(new THREE.Vector3());
+  const maxDimension = Math.max(size.x, size.y, size.z) || 1;
+  const modelMaterials = [];
+
+  model.position.sub(center);
+  model.scale.setScalar(targetSize / maxDimension);
+  model.rotation.set(0.08, -0.36, -0.08);
+
+  model.traverse((child) => {
+    if (!child.isMesh && !child.isPoints) return;
+
+    if (child.geometry.computeVertexNormals) {
+      child.geometry.computeVertexNormals();
+    }
+
+    if (child.isPoints) {
+      child.geometry = filterPointGeometryToContinents(child.geometry, center);
+      child.material = new THREE.PointsMaterial({
+        color: '#b8f2ff',
+        size: 0.026,
+        sizeAttenuation: true,
+        transparent: true,
+        opacity: 0,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending,
+      });
+      modelMaterials.push(child.material);
+      return;
+    }
+
+    const source = Array.isArray(child.material) ? child.material : [child.material];
+    const preparedMaterials = source.map((material) => {
+      const nextMaterial = material?.clone ? material.clone() : new THREE.MeshStandardMaterial();
+      nextMaterial.transparent = true;
+      nextMaterial.opacity = 0;
+      nextMaterial.depthWrite = true;
+      nextMaterial.roughness = Math.min(nextMaterial.roughness ?? 0.7, 0.78);
+      nextMaterial.metalness = Math.min(nextMaterial.metalness ?? 0, 0.12);
+      if ('color' in nextMaterial && nextMaterial.color) {
+        nextMaterial.color.lerp(new THREE.Color('#5d7287'), 0.5);
+        nextMaterial.color.multiplyScalar(0.64);
+      }
+      if ('emissive' in nextMaterial) {
+        nextMaterial.emissive = new THREE.Color('#021527');
+        nextMaterial.emissiveIntensity = 0.04;
+      }
+      modelMaterials.push(nextMaterial);
+      return nextMaterial;
+    });
+
+    child.material = Array.isArray(child.material) ? preparedMaterials : preparedMaterials[0];
+    child.castShadow = false;
+    child.receiveShadow = false;
+  });
+
+  return modelMaterials;
+};
+
 const initHeroLogoModel = () => {
   const canvas = document.getElementById('hero-logo-canvas');
-  const heroRight = canvas?.closest('.hero-right');
-  if (!canvas || !heroRight) return;
+  const heroStage = canvas?.closest('.hero-logo-stage');
+  if (!canvas || !heroStage) return;
 
   const renderer = new THREE.WebGLRenderer({
     canvas,
@@ -416,7 +620,7 @@ const initHeroLogoModel = () => {
     const bounds = canvas.getBoundingClientRect();
     const width = Math.max(1, Math.floor(bounds.width));
     const height = Math.max(1, Math.floor(bounds.height));
-    const pixelRatio = Math.min(window.devicePixelRatio || 1, 1.25);
+    const pixelRatio = Math.min(window.devicePixelRatio || 1, 1);
 
     renderer.setPixelRatio(pixelRatio);
     renderer.setSize(width, height, false);
@@ -434,15 +638,18 @@ const initHeroLogoModel = () => {
   const visibilityObserver = new IntersectionObserver((entries) => {
     isVisible = entries.some((entry) => entry.isIntersecting);
   }, { threshold: 0.05 });
-  visibilityObserver.observe(heroRight);
+  visibilityObserver.observe(heroStage);
 
   loader.load('/model.gltf', (gltf) => {
     logoModel = gltf.scene;
-    const logoMaterials = prepareBullfyLogoModel(logoModel, 3.75);
+    const logoMaterials = prepareBullfyLogoModel(logoModel, 4.35);
     logoAnchor.add(logoModel);
+    document.body.classList.add('hero-logo-model-loaded');
 
-    gsap.to(logoMaterials, {
-      opacity: 0.95,
+    gsap.fromTo(logoMaterials, {
+      opacity: 0.72,
+    }, {
+      opacity: 0.96,
       duration: 0.9,
       stagger: 0.035,
       ease: 'power2.out',
@@ -460,6 +667,11 @@ const initHeroLogoModel = () => {
       ease: 'power3.out',
       delay: 0.2,
     });
+    window.dispatchEvent(new CustomEvent('bullfy:hero-logo-ready'));
+    finishInitialLoad();
+  }, undefined, () => {
+    window.dispatchEvent(new CustomEvent('bullfy:hero-logo-ready'));
+    finishInitialLoad();
   });
 
   const clock = new THREE.Clock();
@@ -485,6 +697,7 @@ const initHeroLogoModel = () => {
 const initThreeScene = () => {
   const canvas = document.getElementById('fx-canvas');
   if (!canvas) return;
+  const propSection = document.getElementById('prop');
 
   const renderer = new THREE.WebGLRenderer({
     canvas,
@@ -502,19 +715,30 @@ const initThreeScene = () => {
   group.scale.setScalar(0.96);
   scene.add(group);
 
-  const planetMaterial = createPlanetMaterial();
+  const planetAnchor = new THREE.Group();
+  group.add(planetAnchor);
+
+  const oceanMaterial = new THREE.MeshPhysicalMaterial({
+    color: '#071d31',
+    roughness: 0.82,
+    metalness: 0.02,
+    clearcoat: 0.22,
+    clearcoatRoughness: 0.65,
+    transparent: true,
+    opacity: 0,
+  });
   const planet = new THREE.Mesh(
-    new THREE.SphereGeometry(1.72, 64, 64),
-    planetMaterial,
+    new THREE.SphereGeometry(1.74, 48, 48),
+    oceanMaterial,
   );
 
   const atmosphere = new THREE.Mesh(
-    new THREE.SphereGeometry(1.86, 64, 64),
+    new THREE.SphereGeometry(1.84, 48, 48),
     createAtmosphereMaterial(),
   );
 
   const terminatorGlow = new THREE.Mesh(
-    new THREE.SphereGeometry(1.735, 64, 64),
+    new THREE.SphereGeometry(1.755, 48, 48),
     new THREE.MeshBasicMaterial({
       color: '#0ea5e9',
       transparent: true,
@@ -524,17 +748,41 @@ const initThreeScene = () => {
     }),
   );
 
-  const particles = createPointCloud();
-  particles.material.opacity = 0.2;
-  group.add(planet, atmosphere, terminatorGlow, particles);
+  planetAnchor.add(planet, atmosphere, terminatorGlow);
 
-  const keyLight = new THREE.DirectionalLight('#c8edff', 3.2);
+  const keyLight = new THREE.DirectionalLight('#9ecfff', 1.35);
   keyLight.position.set(-3.8, 3.2, 4.6);
-  const fillLight = new THREE.PointLight('#2563eb', 1.2, 14);
+  const fillLight = new THREE.PointLight('#1d4ed8', 0.42, 14);
   fillLight.position.set(3.4, -1.8, 2.2);
   scene.add(keyLight);
   scene.add(fillLight);
-  scene.add(new THREE.AmbientLight('#102b5f', 0.95));
+  scene.add(new THREE.AmbientLight('#0d1b38', 0.38));
+
+  const planetModelState = {
+    model: null,
+    materials: [],
+    opacity: { value: 0 },
+    loaded: false,
+  };
+
+  const modelLoader = new GLTFLoader();
+  modelLoader.load('/a_windy_day/scene.gltf', (gltf) => {
+    const model = gltf.scene;
+    const modelMaterials = preparePlanetModel(model);
+
+    planetModelState.model = model;
+    planetModelState.materials = modelMaterials;
+    planetModelState.loaded = true;
+    planetAnchor.add(model);
+
+    gsap.to(modelMaterials, {
+      opacity: planetModelState.opacity.value,
+      duration: 0.75,
+      ease: 'power2.out',
+    });
+  }, undefined, () => {
+    planetModelState.loaded = false;
+  });
 
   const pointer = { x: 0, y: 0 };
   window.addEventListener('pointermove', (event) => {
@@ -543,7 +791,7 @@ const initThreeScene = () => {
   });
 
   const resize = () => {
-    const pixelRatio = Math.min(window.devicePixelRatio || 1, 1.25);
+    const pixelRatio = Math.min(window.devicePixelRatio || 1, 1);
     renderer.setPixelRatio(pixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight, false);
     camera.aspect = window.innerWidth / window.innerHeight;
@@ -553,18 +801,28 @@ const initThreeScene = () => {
   resize();
   window.addEventListener('resize', resize);
 
-  gsap.to(group.rotation, {
-    x: Math.PI * 0.85,
-    y: Math.PI * 1.8,
-    z: Math.PI * 0.35,
-    ease: 'none',
-    scrollTrigger: {
-      trigger: document.body,
-      start: 'top top',
+  let isSceneActive = false;
+  const setPlanetVisible = (visible) => {
+    document.body.classList.toggle('planet-visible', visible);
+    isSceneActive = visible;
+    if (!visible) {
+      renderer.clear();
+    }
+  };
+
+  if (propSection) {
+    ScrollTrigger.create({
+      trigger: propSection,
+      start: 'top bottom',
+      endTrigger: document.body,
       end: 'bottom bottom',
-      scrub: 1.2,
-    },
-  });
+      onEnter: () => setPlanetVisible(true),
+      onEnterBack: () => setPlanetVisible(true),
+      onLeaveBack: () => setPlanetVisible(false),
+    });
+
+    setPlanetVisible(window.scrollY + window.innerHeight >= propSection.offsetTop);
+  }
 
   gsap.to(group.position, {
     x: 0.35,
@@ -579,13 +837,12 @@ const initThreeScene = () => {
     },
   });
 
-  planet.material.uniforms.uOpacity.value = 0;
+  planet.material.opacity = 0;
   atmosphere.material.uniforms.uOpacity.value = 0;
   terminatorGlow.material.opacity = 0;
-  particles.material.opacity = 0;
 
-  gsap.to(planet.material.uniforms.uOpacity, {
-    value: 1,
+  gsap.to(planet.material, {
+    opacity: 0.86,
     ease: 'none',
     scrollTrigger: {
       trigger: '#prop',
@@ -594,8 +851,24 @@ const initThreeScene = () => {
       scrub: true,
     },
   });
+  gsap.to(planetModelState.opacity, {
+    value: 0.95,
+    ease: 'none',
+    onUpdate: () => {
+      if (!planetModelState.loaded) return;
+      planetModelState.materials.forEach((material) => {
+        material.opacity = planetModelState.opacity.value;
+      });
+    },
+    scrollTrigger: {
+      trigger: '#prop',
+      start: 'top 90%',
+      end: 'top 35%',
+      scrub: true,
+    },
+  });
   gsap.to(atmosphere.material.uniforms.uOpacity, {
-    value: 1,
+    value: 0.42,
     ease: 'none',
     scrollTrigger: {
       trigger: '#prop',
@@ -605,7 +878,7 @@ const initThreeScene = () => {
     },
   });
   gsap.to(terminatorGlow.material, {
-    opacity: 0.08,
+    opacity: 0.028,
     ease: 'none',
     scrollTrigger: {
       trigger: '#prop',
@@ -614,18 +887,7 @@ const initThreeScene = () => {
       scrub: true,
     },
   });
-  gsap.to(particles.material, {
-    opacity: 0.2,
-    ease: 'none',
-    scrollTrigger: {
-      trigger: '#prop',
-      start: 'top 90%',
-      end: 'top 35%',
-      scrub: true,
-    },
-  });
-
-  gsap.to(planet.scale, {
+  gsap.to(planetAnchor.scale, {
     x: 1.16,
     y: 1.16,
     z: 1.16,
@@ -642,25 +904,56 @@ const initThreeScene = () => {
   const animate = () => {
     const elapsed = clock.getElapsedTime();
 
-    planetMaterial.uniforms.uTime.value = elapsed;
-    planet.rotation.y += 0.0028;
-    planet.rotation.x = Math.sin(elapsed * 0.12) * 0.04;
-    atmosphere.rotation.y += 0.0018;
-    terminatorGlow.rotation.y = planet.rotation.y;
-    particles.rotation.y = elapsed * 0.025;
+    if (isSceneActive && !document.hidden) {
+      planetAnchor.rotation.y += 0.0023;
+      planetAnchor.rotation.x = Math.sin(elapsed * 0.12) * 0.04;
+      atmosphere.rotation.y += 0.0013;
+      terminatorGlow.rotation.y = planetAnchor.rotation.y;
 
-    group.rotation.y += (pointer.x * 0.18 - group.rotation.y * 0.02) * 0.01;
-    group.rotation.x += (-pointer.y * 0.12 - group.rotation.x * 0.01) * 0.01;
+      group.rotation.y += (pointer.x * 0.12 - group.rotation.y * 0.02) * 0.008;
+      group.rotation.x += (-pointer.y * 0.08 - group.rotation.x * 0.01) * 0.008;
 
-    renderer.render(scene, camera);
+      renderer.render(scene, camera);
+    }
     requestAnimationFrame(animate);
   };
 
   animate();
 };
 
+const initPlanetWhenNeeded = () => {
+  const propSection = document.getElementById('prop');
+  if (!propSection) {
+    initThreeScene();
+    return;
+  }
+
+  let initialized = false;
+  const startPlanet = () => {
+    if (initialized) return;
+    initialized = true;
+    initThreeScene();
+  };
+
+  const observer = new IntersectionObserver((entries) => {
+    if (entries.some((entry) => entry.isIntersecting)) {
+      observer.disconnect();
+      window.requestAnimationFrame(startPlanet);
+    }
+  }, {
+    root: null,
+    rootMargin: '700px 0px 700px 0px',
+    threshold: 0,
+  });
+
+  observer.observe(propSection);
+};
+
 export const initScrollExperience = () => {
   if (prefersReducedMotion()) {
+    finishInitialLoad();
+    document.body.classList.add('hero-content-ready');
+    initFloatingChrome();
     gsap.set('.section-badge, .section-title, .section-subtitle, .plan-card, .social-card-left, .social-card-right, .testimonial-card, .step-card, .footer-container, .hero-left > *, .hero-right', {
       autoAlpha: 1,
       clearProps: 'transform,filter',
@@ -668,9 +961,19 @@ export const initScrollExperience = () => {
     return;
   }
 
-  initThreeScene();
+  let heroMotionStarted = false;
+  const startHeroMotion = () => {
+    if (heroMotionStarted) return;
+    heroMotionStarted = true;
+    initHeroMotion();
+  };
+
+  window.addEventListener('bullfy:hero-logo-ready', startHeroMotion, { once: true });
+  window.setTimeout(startHeroMotion, 1800);
+  window.setTimeout(finishInitialLoad, 2800);
+
   initHeroLogoModel();
-  initHeroMotion();
   initScrollReveals();
   initMagneticButtons();
+  initFloatingChrome();
 };
