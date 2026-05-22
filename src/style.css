@@ -208,6 +208,18 @@ body::before {
   margin-bottom: 2rem;
   width: fit-content;
   background: rgba(255,255,255,0.02);
+  position: relative;
+  overflow: hidden;
+  box-shadow: 0 0 18px rgba(59, 130, 246, 0.08);
+}
+
+.badge-pill::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(147, 197, 253, 0.24), transparent);
+  transform: translateX(-120%);
+  animation: hero-sheen 4.8s ease-in-out infinite;
 }
 
 .badge-label {
@@ -227,6 +239,10 @@ body::before {
   margin-bottom: 1.5rem;
   letter-spacing: -1px;
   text-shadow: 0 0 34px rgba(59, 130, 246, 0.22);
+  background: linear-gradient(180deg, #ffffff 0%, #eaf4ff 55%, #9cc9ff 120%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
 }
 
 .hero-subtitle {
@@ -240,6 +256,7 @@ body::before {
   display: flex;
   gap: 1rem;
   margin-bottom: 3rem;
+  transform-style: preserve-3d;
 }
 
 .btn-white {
@@ -251,11 +268,13 @@ body::before {
   font-weight: 600;
   font-size: 1rem;
   cursor: pointer;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.2s ease, box-shadow 0.25s ease;
+  box-shadow: 0 0 0 rgba(255, 255, 255, 0);
 }
 
 .btn-white:hover {
   opacity: 0.9;
+  box-shadow: 0 16px 34px rgba(255, 255, 255, 0.18);
 }
 
 .btn-outline {
@@ -276,6 +295,8 @@ body::before {
 
 .trust-score {
   margin-top: auto;
+  border-left: 1px solid rgba(96, 165, 250, 0.38);
+  padding-left: 1rem;
 }
 
 .trust-label {
@@ -306,6 +327,17 @@ body::before {
   box-shadow: 0 20px 50px rgba(0,0,0,0.5);
   transform-style: preserve-3d;
   isolation: isolate;
+}
+
+.video-preview-card::after {
+  content: "";
+  position: absolute;
+  inset: -35%;
+  z-index: 0;
+  background: radial-gradient(circle, rgba(59, 130, 246, 0.18), transparent 58%);
+  opacity: 0.65;
+  animation: hero-orbit-glow 6s ease-in-out infinite alternate;
+  pointer-events: none;
 }
 
 .video-preview-card::before {
@@ -476,6 +508,17 @@ body::before {
   100% { transform: translate3d(18px, 18px, 0); opacity: 0.35; }
 }
 
+@keyframes hero-sheen {
+  0%, 58% { transform: translateX(-120%); opacity: 0; }
+  68% { opacity: 1; }
+  86%, 100% { transform: translateX(120%); opacity: 0; }
+}
+
+@keyframes hero-orbit-glow {
+  0% { transform: translate3d(-8%, -4%, 0) rotate(0deg); opacity: 0.34; }
+  100% { transform: translate3d(8%, 5%, 0) rotate(18deg); opacity: 0.72; }
+}
+
 /* --- New Sections (Prop Firm & Social Trading) --- */
 .section-container {
   --section-light: 0%;
@@ -609,6 +652,30 @@ body::before {
   gap: 2rem;
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+  transform-origin: bottom center;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.plan-card::before {
+  content: "";
+  position: absolute;
+  inset: -45%;
+  z-index: 0;
+  background:
+    linear-gradient(115deg, transparent 38%, rgba(96, 165, 250, 0.16) 48%, transparent 58%),
+    radial-gradient(circle at 20% 20%, rgba(34, 211, 238, 0.16), transparent 28%);
+  opacity: 0.65;
+  pointer-events: none;
+  transform: translateX(-18%) rotate(8deg);
+  animation: plan-card-flow 7s ease-in-out infinite alternate;
+}
+
+.plan-card > * {
+  position: relative;
+  z-index: 1;
 }
 
 .plan-col-1 {
@@ -1223,28 +1290,21 @@ body::before {
 .reveal-delay-2 { transition-delay: 0.2s; }
 .reveal-delay-3 { transition-delay: 0.3s; }
 
-/* --- Crazy Interaction Animations --- */
-@keyframes cyber-glitch {
-  0% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); background: rgba(59, 130, 246, 0.4); transform: translate(0); filter: hue-rotate(0deg); opacity: 0; }
-  10% { clip-path: polygon(0 15%, 100% 15%, 100% 30%, 0 30%); background: rgba(255, 0, 193, 0.4); transform: translate(-10px, 5px); opacity: 1; }
-  20% { clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%); background: rgba(0, 255, 249, 0.4); transform: translate(10px, -5px); }
-  30% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); background: rgba(59, 130, 246, 0.4); transform: translate(0); opacity: 0.5; }
-  40% { clip-path: polygon(0 40%, 100% 40%, 100% 50%, 0 50%); background: rgba(255, 255, 255, 0.4); transform: translate(-5px, 10px); }
-  50% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); opacity: 0; }
-  100% { clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%); opacity: 0; }
-}
-
 @keyframes scale-bounce-flash {
-  0% { transform: scale(0.95); box-shadow: 0 0 0 rgba(59, 130, 246, 0); }
-  40% { transform: scale(1.03); box-shadow: 0 0 40px rgba(59, 130, 246, 0.8), inset 0 0 20px rgba(59, 130, 246, 0.3); border-color: #60a5fa; }
-  70% { transform: scale(0.98); }
-  100% { transform: scale(1); box-shadow: 0 0 15px rgba(59, 130, 246, 0); }
+  0% { box-shadow: 0 10px 30px rgba(0,0,0,0.5); border-color: var(--color-blue-border); }
+  45% { box-shadow: 0 18px 54px rgba(37, 99, 235, 0.26), inset 0 0 18px rgba(59, 130, 246, 0.14); border-color: rgba(96, 165, 250, 0.62); }
+  100% { box-shadow: 0 10px 30px rgba(0,0,0,0.5); border-color: var(--color-blue-border); }
 }
 
 @keyframes text-scramble {
-  0% { opacity: 0; filter: blur(5px); transform: scale(0.8) translateY(-10px); color: #60a5fa; }
-  50% { opacity: 1; filter: blur(0); transform: scale(1.1) translateY(2px); color: #fff; }
-  100% { opacity: 1; filter: blur(0); transform: scale(1) translateY(0); color: inherit; }
+  0% { opacity: 0; filter: blur(8px); transform: translateY(10px); color: #bfdbfe; }
+  100% { opacity: 1; filter: blur(0); transform: translateY(0); color: inherit; }
+}
+
+@keyframes plan-card-flow {
+  0% { transform: translateX(-24%) rotate(8deg); opacity: 0.28; }
+  45% { opacity: 0.72; }
+  100% { transform: translateX(18%) rotate(8deg); opacity: 0.42; }
 }
 
 .anim-crazy-card {
@@ -1255,14 +1315,23 @@ body::before {
 .anim-crazy-card::after {
   content: "";
   position: absolute;
-  top: 0; left: 0; width: 100%; height: 100%;
+  inset: 0;
   pointer-events: none;
   z-index: 10;
-  animation: cyber-glitch 0.5s ease forwards;
   border-radius: inherit;
+  background: linear-gradient(115deg, transparent 30%, rgba(191, 219, 254, 0.18), transparent 70%);
+  opacity: 0;
+  transform: translateX(-35%);
+  animation: refined-sheen 0.7s ease forwards;
 }
 
 .anim-crazy-text {
-  animation: text-scramble 0.5s cubic-bezier(0.25, 1.5, 0.5, 1) forwards;
+  animation: text-scramble 0.42s cubic-bezier(0.22, 1, 0.36, 1) forwards;
   display: inline-block;
+}
+
+@keyframes refined-sheen {
+  0% { opacity: 0; transform: translateX(-36%); }
+  35% { opacity: 0.75; }
+  100% { opacity: 0; transform: translateX(36%); }
 }

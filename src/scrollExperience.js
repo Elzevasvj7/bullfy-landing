@@ -37,6 +37,97 @@ const initMagneticButtons = () => {
   });
 };
 
+const initHeroMotion = () => {
+  const heroItems = gsap.utils.toArray('.badge-pill, .hero-title, .hero-subtitle, .hero-actions, .trust-score');
+  const videoCard = document.querySelector('.video-preview-card');
+  const heroLogo = document.querySelector('.hero-logo-canvas');
+
+  gsap.fromTo(heroItems, {
+    autoAlpha: 0,
+    x: -44,
+    y: 24,
+    filter: 'blur(12px)',
+  }, {
+    autoAlpha: 1,
+    x: 0,
+    y: 0,
+    filter: 'blur(0px)',
+    duration: 1,
+    stagger: 0.09,
+    ease: 'power4.out',
+    delay: 0.12,
+  });
+
+  if (videoCard) {
+    gsap.fromTo(videoCard, {
+      autoAlpha: 0,
+      y: 54,
+      rotateX: -7,
+      rotateY: 8,
+      filter: 'blur(14px)',
+    }, {
+      autoAlpha: 1,
+      y: 0,
+      rotateX: 0,
+      rotateY: 0,
+      filter: 'blur(0px)',
+      duration: 1.2,
+      ease: 'power4.out',
+      delay: 0.28,
+    });
+
+    gsap.to(videoCard, {
+      y: -10,
+      rotateX: 1.6,
+      rotateY: -1.2,
+      duration: 4.5,
+      repeat: -1,
+      yoyo: true,
+      ease: 'sine.inOut',
+      delay: 1.5,
+    });
+  }
+
+  if (heroLogo) {
+    gsap.fromTo(heroLogo, {
+      autoAlpha: 0,
+      y: 18,
+      scale: 0.9,
+      filter: 'blur(10px) drop-shadow(0 18px 34px rgba(14, 165, 233, 0.12))',
+    }, {
+      autoAlpha: 1,
+      y: 0,
+      scale: 1,
+      filter: 'blur(0px) drop-shadow(0 24px 44px rgba(14, 165, 233, 0.28))',
+      duration: 1.1,
+      ease: 'power4.out',
+      delay: 0.18,
+    });
+  }
+
+  gsap.to('.hero-left', {
+    y: -28,
+    ease: 'none',
+    scrollTrigger: {
+      trigger: '.main-grid-container',
+      start: 'top top',
+      end: 'bottom top',
+      scrub: true,
+    },
+  });
+
+  gsap.to('.hero-right', {
+    y: -52,
+    ease: 'none',
+    scrollTrigger: {
+      trigger: '.main-grid-container',
+      start: 'top top',
+      end: 'bottom top',
+      scrub: true,
+    },
+  });
+};
+
 const initScrollReveals = () => {
   const revealSets = [
     { selector: '.section-badge, .section-title, .section-subtitle', x: 0, y: 60, stagger: 0.08 },
@@ -106,23 +197,12 @@ const initScrollReveals = () => {
     });
   });
 
-  gsap.to('.hero-title', {
-    yPercent: -12,
-    ease: 'none',
-    scrollTrigger: {
-      trigger: '.main-grid-container',
-      start: 'top top',
-      end: 'bottom top',
-      scrub: true,
-    },
-  });
-
   ScrollTrigger.refresh();
 };
 
 const createPointCloud = () => {
   const geometry = new THREE.BufferGeometry();
-  const count = 900;
+  const count = 420;
   const positions = new Float32Array(count * 3);
   const colors = new Float32Array(count * 3);
   const colorA = new THREE.Color('#3b82f6');
@@ -149,7 +229,7 @@ const createPointCloud = () => {
   return new THREE.Points(
     geometry,
     new THREE.PointsMaterial({
-      size: 0.025,
+      size: 0.03,
       vertexColors: true,
       transparent: true,
       opacity: 0.85,
@@ -162,6 +242,7 @@ const createPointCloud = () => {
 const createPlanetMaterial = () => new THREE.ShaderMaterial({
   uniforms: {
     uTime: { value: 0 },
+    uOpacity: { value: 1 },
     uBase: { value: new THREE.Color('#030a15') },
     uOcean: { value: new THREE.Color('#073b67') },
     uLand: { value: new THREE.Color('#42a5d8') },
@@ -183,6 +264,7 @@ const createPlanetMaterial = () => new THREE.ShaderMaterial({
   `,
   fragmentShader: `
     uniform float uTime;
+    uniform float uOpacity;
     uniform vec3 uBase;
     uniform vec3 uOcean;
     uniform vec3 uLand;
@@ -244,7 +326,7 @@ const createPlanetMaterial = () => new THREE.ShaderMaterial({
       color += vec3(0.42, 0.72, 1.0) * rim * 0.52;
       color = mix(color, vec3(0.86, 0.96, 1.0), clouds * 0.16);
 
-      gl_FragColor = vec4(color, 1.0);
+      gl_FragColor = vec4(color, uOpacity);
     }
   `,
 });
@@ -252,6 +334,7 @@ const createPlanetMaterial = () => new THREE.ShaderMaterial({
 const createAtmosphereMaterial = () => new THREE.ShaderMaterial({
   uniforms: {
     uGlow: { value: new THREE.Color('#5fb7ff') },
+    uOpacity: { value: 1 },
   },
   vertexShader: `
     varying vec3 vNormal;
@@ -263,11 +346,12 @@ const createAtmosphereMaterial = () => new THREE.ShaderMaterial({
   `,
   fragmentShader: `
     uniform vec3 uGlow;
+    uniform float uOpacity;
     varying vec3 vNormal;
 
     void main() {
       float intensity = pow(0.72 - dot(vNormal, vec3(0.0, 0.0, 1.0)), 2.6);
-      gl_FragColor = vec4(uGlow, intensity * 0.42);
+      gl_FragColor = vec4(uGlow, intensity * 0.42 * uOpacity);
     }
   `,
   blending: THREE.AdditiveBlending,
@@ -316,7 +400,7 @@ const initHeroLogoModel = () => {
   const renderer = new THREE.WebGLRenderer({
     canvas,
     alpha: true,
-    antialias: true,
+    antialias: false,
     powerPreference: 'high-performance',
   });
 
@@ -341,7 +425,7 @@ const initHeroLogoModel = () => {
     const bounds = canvas.getBoundingClientRect();
     const width = Math.max(1, Math.floor(bounds.width));
     const height = Math.max(1, Math.floor(bounds.height));
-    const pixelRatio = Math.min(window.devicePixelRatio || 1, 1.75);
+    const pixelRatio = Math.min(window.devicePixelRatio || 1, 1.25);
 
     renderer.setPixelRatio(pixelRatio);
     renderer.setSize(width, height, false);
@@ -354,6 +438,13 @@ const initHeroLogoModel = () => {
 
   const loader = new GLTFLoader();
   let logoModel;
+  let isVisible = true;
+
+  const visibilityObserver = new IntersectionObserver((entries) => {
+    isVisible = entries.some((entry) => entry.isIntersecting);
+  }, { threshold: 0.05 });
+  visibilityObserver.observe(heroRight);
+
   loader.load('/model.gltf', (gltf) => {
     logoModel = gltf.scene;
     const logoMaterials = prepareBullfyLogoModel(logoModel, 3.75);
@@ -384,14 +475,16 @@ const initHeroLogoModel = () => {
   const animate = () => {
     const elapsed = clock.getElapsedTime();
 
-    logoAnchor.rotation.y = -0.25 + elapsed * 0.42;
-    logoAnchor.rotation.x = -0.1 + Math.sin(elapsed * 0.7) * 0.055;
-    logoAnchor.rotation.z = Math.sin(elapsed * 0.5) * 0.025;
-    if (logoModel) {
-      logoModel.position.y = Math.sin(elapsed * 0.8) * 0.025;
-    }
+    if (isVisible) {
+      logoAnchor.rotation.y = -0.25 + elapsed * 0.42;
+      logoAnchor.rotation.x = -0.1 + Math.sin(elapsed * 0.7) * 0.055;
+      logoAnchor.rotation.z = Math.sin(elapsed * 0.5) * 0.025;
+      if (logoModel) {
+        logoModel.position.y = Math.sin(elapsed * 0.8) * 0.025;
+      }
 
-    renderer.render(scene, camera);
+      renderer.render(scene, camera);
+    }
     requestAnimationFrame(animate);
   };
 
@@ -405,7 +498,7 @@ const initThreeScene = () => {
   const renderer = new THREE.WebGLRenderer({
     canvas,
     alpha: true,
-    antialias: true,
+    antialias: false,
     powerPreference: 'high-performance',
   });
 
@@ -414,23 +507,23 @@ const initThreeScene = () => {
   camera.position.set(0, 0, 9);
 
   const group = new THREE.Group();
-  group.position.set(1.05, -4.15, -0.45);
-  group.scale.setScalar(1.08);
+  group.position.set(1.05, -3.15, -0.85);
+  group.scale.setScalar(0.96);
   scene.add(group);
 
   const planetMaterial = createPlanetMaterial();
   const planet = new THREE.Mesh(
-    new THREE.SphereGeometry(1.72, 96, 96),
+    new THREE.SphereGeometry(1.72, 64, 64),
     planetMaterial,
   );
 
   const atmosphere = new THREE.Mesh(
-    new THREE.SphereGeometry(1.86, 96, 96),
+    new THREE.SphereGeometry(1.86, 64, 64),
     createAtmosphereMaterial(),
   );
 
   const terminatorGlow = new THREE.Mesh(
-    new THREE.SphereGeometry(1.735, 96, 96),
+    new THREE.SphereGeometry(1.735, 64, 64),
     new THREE.MeshBasicMaterial({
       color: '#0ea5e9',
       transparent: true,
@@ -441,7 +534,7 @@ const initThreeScene = () => {
   );
 
   const particles = createPointCloud();
-  particles.material.opacity = 0.28;
+  particles.material.opacity = 0.2;
   group.add(planet, atmosphere, terminatorGlow, particles);
 
   const keyLight = new THREE.DirectionalLight('#c8edff', 3.2);
@@ -459,7 +552,7 @@ const initThreeScene = () => {
   });
 
   const resize = () => {
-    const pixelRatio = Math.min(window.devicePixelRatio || 1, 1.75);
+    const pixelRatio = Math.min(window.devicePixelRatio || 1, 1.25);
     renderer.setPixelRatio(pixelRatio);
     renderer.setSize(window.innerWidth, window.innerHeight, false);
     camera.aspect = window.innerWidth / window.innerHeight;
@@ -484,13 +577,59 @@ const initThreeScene = () => {
 
   gsap.to(group.position, {
     x: 0.35,
-    y: -0.95,
-    z: -1.25,
+    y: -1.35,
+    z: -1.45,
     ease: 'none',
     scrollTrigger: {
       trigger: '#prop',
       start: 'top bottom',
-      end: 'bottom 45%',
+      end: 'bottom 55%',
+      scrub: true,
+    },
+  });
+
+  planet.material.uniforms.uOpacity.value = 0;
+  atmosphere.material.uniforms.uOpacity.value = 0;
+  terminatorGlow.material.opacity = 0;
+  particles.material.opacity = 0;
+
+  gsap.to(planet.material.uniforms.uOpacity, {
+    value: 1,
+    ease: 'none',
+    scrollTrigger: {
+      trigger: '#prop',
+      start: 'top 90%',
+      end: 'top 35%',
+      scrub: true,
+    },
+  });
+  gsap.to(atmosphere.material.uniforms.uOpacity, {
+    value: 1,
+    ease: 'none',
+    scrollTrigger: {
+      trigger: '#prop',
+      start: 'top 90%',
+      end: 'top 35%',
+      scrub: true,
+    },
+  });
+  gsap.to(terminatorGlow.material, {
+    opacity: 0.08,
+    ease: 'none',
+    scrollTrigger: {
+      trigger: '#prop',
+      start: 'top 90%',
+      end: 'top 35%',
+      scrub: true,
+    },
+  });
+  gsap.to(particles.material, {
+    opacity: 0.2,
+    ease: 'none',
+    scrollTrigger: {
+      trigger: '#prop',
+      start: 'top 90%',
+      end: 'top 35%',
       scrub: true,
     },
   });
@@ -540,6 +679,7 @@ export const initScrollExperience = () => {
 
   initThreeScene();
   initHeroLogoModel();
+  initHeroMotion();
   initScrollReveals();
   initMagneticButtons();
 };
