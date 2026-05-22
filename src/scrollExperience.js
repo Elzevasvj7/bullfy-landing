@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -161,11 +162,12 @@ const createPointCloud = () => {
 const createPlanetMaterial = () => new THREE.ShaderMaterial({
   uniforms: {
     uTime: { value: 0 },
-    uBase: { value: new THREE.Color('#07111f') },
-    uOcean: { value: new THREE.Color('#0f4a7c') },
-    uLand: { value: new THREE.Color('#2f7bbd') },
+    uBase: { value: new THREE.Color('#030a15') },
+    uOcean: { value: new THREE.Color('#073b67') },
+    uLand: { value: new THREE.Color('#42a5d8') },
     uIce: { value: new THREE.Color('#b9e6ff') },
   },
+  transparent: true,
   vertexShader: `
     varying vec2 vUv;
     varying vec3 vNormal;
@@ -223,21 +225,24 @@ const createPlanetMaterial = () => new THREE.ShaderMaterial({
       vec2 planetUv = vec2(vUv.x + uTime * 0.018, vUv.y);
       float continents = fbm(planetUv * vec2(5.2, 2.8));
       float detail = fbm(planetUv * vec2(18.0, 8.0));
-      float landMask = smoothstep(0.52, 0.68, continents + detail * 0.18);
+      float landField = continents + detail * 0.24;
+      float landMask = smoothstep(0.48, 0.58, landField);
       float polarMask = smoothstep(0.78, 0.98, abs(vUv.y - 0.5) * 2.0);
+      float coastline = smoothstep(0.47, 0.5, landField) - smoothstep(0.59, 0.63, landField);
 
       vec3 color = mix(uOcean, uLand, landMask);
-      color = mix(color, uIce, polarMask * 0.62);
-      color = mix(uBase, color, 0.88);
+      color = mix(color, uIce, polarMask * 0.52);
+      color = mix(uBase, color, 0.94);
 
       vec3 lightDirection = normalize(vec3(-0.25, 0.55, 0.82));
       float light = max(dot(normalize(vNormal), lightDirection), 0.0);
       float rim = pow(1.0 - max(dot(normalize(vNormal), vec3(0.0, 0.0, 1.0)), 0.0), 2.4);
       float clouds = smoothstep(0.58, 0.74, fbm(vec2(vUv.x + uTime * 0.04, vUv.y) * vec2(10.0, 4.0)));
 
-      color *= 0.36 + light * 1.22;
-      color += vec3(0.42, 0.72, 1.0) * rim * 0.46;
-      color = mix(color, vec3(0.82, 0.94, 1.0), clouds * 0.22);
+      color *= 0.42 + light * 1.32;
+      color += vec3(0.2, 0.78, 1.0) * coastline * 0.42;
+      color += vec3(0.42, 0.72, 1.0) * rim * 0.52;
+      color = mix(color, vec3(0.86, 0.96, 1.0), clouds * 0.16);
 
       gl_FragColor = vec4(color, 1.0);
     }
@@ -271,6 +276,128 @@ const createAtmosphereMaterial = () => new THREE.ShaderMaterial({
   depthWrite: false,
 });
 
+const prepareBullfyLogoModel = (model, targetSize = 2.6) => {
+  const box = new THREE.Box3().setFromObject(model);
+  const size = box.getSize(new THREE.Vector3());
+  const center = box.getCenter(new THREE.Vector3());
+  const maxDimension = Math.max(size.x, size.y, size.z) || 1;
+  const logoMaterials = [];
+
+  model.position.sub(center);
+  model.scale.setScalar(targetSize / maxDimension);
+
+  model.traverse((child) => {
+    if (!child.isMesh) return;
+
+    child.geometry.computeVertexNormals();
+    child.material = new THREE.MeshPhysicalMaterial({
+      color: '#1c96d4',
+      emissive: '#0ea5e9',
+      emissiveIntensity: 0.42,
+      metalness: 0.46,
+      roughness: 0.16,
+      clearcoat: 0.78,
+      clearcoatRoughness: 0.14,
+      transparent: true,
+      opacity: 0,
+      side: THREE.DoubleSide,
+    });
+    logoMaterials.push(child.material);
+  });
+
+  return logoMaterials;
+};
+
+const initHeroLogoModel = () => {
+  const canvas = document.getElementById('hero-logo-canvas');
+  const heroRight = canvas?.closest('.hero-right');
+  if (!canvas || !heroRight) return;
+
+  const renderer = new THREE.WebGLRenderer({
+    canvas,
+    alpha: true,
+    antialias: true,
+    powerPreference: 'high-performance',
+  });
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(34, 1, 0.1, 100);
+  camera.position.set(0, 0, 6);
+
+  const logoAnchor = new THREE.Group();
+  logoAnchor.position.set(0, 0, 0);
+  logoAnchor.rotation.set(-0.1, -0.25, 0);
+  scene.add(logoAnchor);
+
+  scene.add(new THREE.AmbientLight('#6abfff', 1.15));
+  const keyLight = new THREE.DirectionalLight('#d9f3ff', 3.1);
+  keyLight.position.set(-2.2, 2.6, 4);
+  scene.add(keyLight);
+  const rimLight = new THREE.PointLight('#1c96d4', 2.2, 8);
+  rimLight.position.set(2.4, -1.6, 2.2);
+  scene.add(rimLight);
+
+  const resize = () => {
+    const bounds = canvas.getBoundingClientRect();
+    const width = Math.max(1, Math.floor(bounds.width));
+    const height = Math.max(1, Math.floor(bounds.height));
+    const pixelRatio = Math.min(window.devicePixelRatio || 1, 1.75);
+
+    renderer.setPixelRatio(pixelRatio);
+    renderer.setSize(width, height, false);
+    camera.aspect = width / height;
+    camera.updateProjectionMatrix();
+  };
+
+  resize();
+  window.addEventListener('resize', resize);
+
+  const loader = new GLTFLoader();
+  let logoModel;
+  loader.load('/model.gltf', (gltf) => {
+    logoModel = gltf.scene;
+    const logoMaterials = prepareBullfyLogoModel(logoModel, 3.75);
+    logoAnchor.add(logoModel);
+
+    gsap.to(logoMaterials, {
+      opacity: 0.95,
+      duration: 0.9,
+      stagger: 0.035,
+      ease: 'power2.out',
+      delay: 0.2,
+    });
+    gsap.fromTo(logoAnchor.scale, {
+      x: 0.82,
+      y: 0.82,
+      z: 0.82,
+    }, {
+      x: 1,
+      y: 1,
+      z: 1,
+      duration: 1.15,
+      ease: 'power3.out',
+      delay: 0.2,
+    });
+  });
+
+  const clock = new THREE.Clock();
+  const animate = () => {
+    const elapsed = clock.getElapsedTime();
+
+    logoAnchor.rotation.y = -0.25 + elapsed * 0.42;
+    logoAnchor.rotation.x = -0.1 + Math.sin(elapsed * 0.7) * 0.055;
+    logoAnchor.rotation.z = Math.sin(elapsed * 0.5) * 0.025;
+    if (logoModel) {
+      logoModel.position.y = Math.sin(elapsed * 0.8) * 0.025;
+    }
+
+    renderer.render(scene, camera);
+    requestAnimationFrame(animate);
+  };
+
+  animate();
+};
+
 const initThreeScene = () => {
   const canvas = document.getElementById('fx-canvas');
   if (!canvas) return;
@@ -287,8 +414,8 @@ const initThreeScene = () => {
   camera.position.set(0, 0, 9);
 
   const group = new THREE.Group();
-  group.position.set(1.2, 0.18, -0.25);
-  group.scale.setScalar(1.18);
+  group.position.set(1.05, -4.15, -0.45);
+  group.scale.setScalar(1.08);
   scene.add(group);
 
   const planetMaterial = createPlanetMaterial();
@@ -356,14 +483,14 @@ const initThreeScene = () => {
   });
 
   gsap.to(group.position, {
-    x: -1.05,
-    y: -0.8,
-    z: -1.4,
+    x: 0.35,
+    y: -0.95,
+    z: -1.25,
     ease: 'none',
     scrollTrigger: {
-      trigger: '#social',
+      trigger: '#prop',
       start: 'top bottom',
-      end: 'bottom top',
+      end: 'bottom 45%',
       scrub: true,
     },
   });
@@ -412,6 +539,7 @@ export const initScrollExperience = () => {
   }
 
   initThreeScene();
+  initHeroLogoModel();
   initScrollReveals();
   initMagneticButtons();
 };
