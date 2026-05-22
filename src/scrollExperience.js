@@ -43,34 +43,29 @@ const initHeroMotion = () => {
   const heroLogo = document.querySelector('.hero-logo-canvas');
 
   gsap.fromTo(heroItems, {
-    autoAlpha: 0,
     x: -44,
     y: 24,
-    filter: 'blur(12px)',
   }, {
-    autoAlpha: 1,
     x: 0,
     y: 0,
-    filter: 'blur(0px)',
     duration: 1,
     stagger: 0.09,
     ease: 'power4.out',
     delay: 0.12,
+    onComplete: () => {
+      gsap.set(heroItems, { clearProps: 'transform' });
+    },
   });
 
   if (videoCard) {
     gsap.fromTo(videoCard, {
-      autoAlpha: 0,
       y: 54,
       rotateX: -7,
       rotateY: 8,
-      filter: 'blur(14px)',
     }, {
-      autoAlpha: 1,
       y: 0,
       rotateX: 0,
       rotateY: 0,
-      filter: 'blur(0px)',
       duration: 1.2,
       ease: 'power4.out',
       delay: 0.28,
@@ -90,15 +85,11 @@ const initHeroMotion = () => {
 
   if (heroLogo) {
     gsap.fromTo(heroLogo, {
-      autoAlpha: 0,
       y: 18,
       scale: 0.9,
-      filter: 'blur(10px) drop-shadow(0 18px 34px rgba(14, 165, 233, 0.12))',
     }, {
-      autoAlpha: 1,
       y: 0,
       scale: 1,
-      filter: 'blur(0px) drop-shadow(0 24px 44px rgba(14, 165, 233, 0.28))',
       duration: 1.1,
       ease: 'power4.out',
       delay: 0.18,
